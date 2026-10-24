@@ -1,0 +1,93 @@
+name: phpunit
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  transport:
+    runs-on: ubuntu-latest
+    env:
+      TRANSPORT_SHA: 44a9c7abde5a35d869c5f71780d56e26c0c6f8bd
+    steps:
+      - uses: dtolnay/rust-toolchain@stable
+      - run: |
+          CARGO_TARGET_DIR="$RUNNER_TEMP/target-$TRANSPORT_SHA" cargo install --locked --git https://github.com/selectiveci/transport \
+            --rev "$TRANSPORT_SHA" --bin transport --bin transport-conformance --root "$RUNNER_TEMP/transport"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: transport
+          path: |
+            ${{ runner.temp }}/transport/bin/transport
+            ${{ runner.temp }}/transport/bin/transport-conformance
+
+  client:
+    needs: transport
+    runs-on: ubuntu-latest
+    env:
+      SELECTIVE_TRANSPORT: ${{ github.workspace }}/transport-bin/transport
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - php: "8.2"
+            phpunit: "10.5.66"
+          - php: "8.2"
+            phpunit: "11.5.57"
+          - php: "8.3"
+            phpunit: "12.5.40"
+          - php: "8.4"
+            phpunit: "13.4.3"
+          - php: "8.5"
+            phpunit: "12.5.40"
+          - php: "8.5"
+            phpunit: "13.4.3"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: transport
+          path: transport-bin
+      - run: chmod +x transport-bin/transport transport-bin/transport-conformance
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: curl, dom, mbstring, pcntl, zip
+          coverage: pcov
+      - run: composer require --no-interaction --update-with-dependencies phpunit/phpunit:${{ matrix.phpunit }}
+      - run: php tests/harness/play.php
+      - name: transport conformance run
+        working-directory: tests/fixtures/suite
+        run: |
+          conformance="$GITHUB_WORKSPACE/transport-bin/transport-conformance"
+          for scenario in $("$conformance" list); do
+            SELECTIVE_FLAKE_FILE="$RUNNER_TEMP/flake-$scenario" "$conformance" run --scenario "$scenario" --transport "$SELECTIVE_TRANSPORT" \
+              --client "php $GITHUB_WORKSPACE/bin/selective phpunit" --fixture-ids conformance.json
+          done
+
+  laravel:
+    needs: transport
+    runs-on: ubuntu-latest
+    env:
+      SELECTIVE_TRANSPORT: ${{ github.workspace }}/transport-bin/transport
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: client
+      - uses: actions/download-artifact@v4
+        with:
+          name: transport
+          path: transport-bin
+      - run: chmod +x transport-bin/transport transport-bin/transport-conformance
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.4"
+          extensions: curl, dom, mbstring, pcntl, pdo_sqlite, zip
+          coverage: none
+      - run: composer create-project --no-interaction laravel/laravel:13.11.0 app
+      - working-directory: app
+        run: |
+          composer config repositories.selective path ../client
+          composer require --dev --no-interaction selective/phpunit:0.1.0
+          cp ../client/tests/fixtures/laravel/HookCounterTest.php tests/Feature/
+      - run: php client/tests/harness/laravel.php "$GITHUB_WORKSPACE/app"

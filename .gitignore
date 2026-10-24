@@ -1,0 +1,8 @@
+/vendor/
+/composer.lock
+.phpunit.cache/
+phpunit.selective.xml
+.cursor/
+tests/fixtures/suite/vendor/
+tests/fixtures/suite/.phpunit.cache/
+tests/fixtures/suite/phpunit.selective.xml

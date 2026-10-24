@@ -1,0 +1,45 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+$autoload = null;
+$fromComposer = $GLOBALS['_composer_autoload_path'] ?? null;
+$candidates = [];
+if (is_string($fromComposer) && $fromComposer !== '') {
+    $candidates[] = $fromComposer;
+}
+$candidates[] = __DIR__ . '/../vendor/autoload.php';
+$candidates[] = __DIR__ . '/../../../autoload.php';
+foreach ($candidates as $candidate) {
+    if (is_file($candidate)) {
+        $autoload = $candidate;
+        break;
+    }
+}
+if ($autoload === null) {
+    fwrite(STDERR, "Selective could not find vendor/autoload.php. Run composer install.\n");
+    exit(1);
+}
+require $autoload;
+defined('PHPUNIT_COMPOSER_INSTALL') || define('PHPUNIT_COMPOSER_INSTALL', realpath($autoload));
+
+use Selective\PHPUnit\Session;
+
+$argv = $_SERVER['argv'];
+array_shift($argv);
+$exec = false;
+if (($argv[0] ?? '') === 'exec') {
+    $exec = true;
+    array_shift($argv);
+}
+if (($argv[0] ?? '') !== 'phpunit') {
+    fwrite(STDERR, "usage: selective phpunit [phpunit-arguments]\n       selective exec phpunit [phpunit-arguments]\n");
+    exit(1);
+}
+array_shift($argv);
+[$args, $debug, $log] = Session::options($argv);
+if ($exec) {
+    (new Session($debug, $log))->exec($args);
+}
+(new Session($debug, $log))->run($args);

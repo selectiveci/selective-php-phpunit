@@ -1,0 +1,1 @@
+{"pass":"PassTest::testPass","fail":"FailTest::testFail","pending":"PendTest::testPend","flaky":"FlakeTest::testFlake","before_all_seconds":0.5}

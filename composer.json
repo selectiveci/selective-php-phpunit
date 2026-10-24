@@ -1,0 +1,32 @@
+{
+    "name": "selective/phpunit",
+    "description": "Selective PHPUnit client. One warm process, server-assigned test ids, over the stdio transport.",
+    "type": "library",
+    "license": "MIT",
+    "version": "0.1.0",
+    "bin": ["bin/selective"],
+    "require": {
+        "php": ">=8.2",
+        "ext-curl": "*",
+        "ext-dom": "*",
+        "ext-mbstring": "*",
+        "ext-zlib": "*",
+        "phpunit/phpunit": "^10.5 || ^11.5 || ^12.5 || ^13.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Selective\\PHPUnit\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Selective\\PHPUnit\\Tests\\": "tests/Unit/"
+        }
+    },
+    "suggest": {
+        "ext-pcntl": "Stop a run when the process receives SIGINT or SIGTERM."
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

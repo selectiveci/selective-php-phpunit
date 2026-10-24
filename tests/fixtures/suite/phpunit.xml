@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit>
+  <testsuites>
+    <testsuite name="fixture">
+      <file>tests/PassTest.php</file>
+      <file>tests/FailTest.php</file>
+      <file>tests/PendTest.php</file>
+      <file>tests/FlakeTest.php</file>
+    </testsuite>
+  </testsuites>
+</phpunit>

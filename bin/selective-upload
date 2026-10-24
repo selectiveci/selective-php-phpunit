@@ -1,0 +1,41 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+$url = getenv('SELECTIVE_FRAGMENT_URL');
+$key = getenv('SELECTIVE_FRAGMENT_KEY');
+$body = stream_get_contents(STDIN);
+if (!is_string($url) || $url === '' || !is_string($key) || !is_string($body) || $body === '') {
+    fwrite(STDERR, "incomplete fragment upload\n");
+    exit(1);
+}
+$handle = curl_init($url);
+if ($handle === false) {
+    fwrite(STDERR, "curl_init failed\n");
+    exit(1);
+}
+curl_setopt_array($handle, [
+    CURLOPT_POST => true,
+    CURLOPT_POSTFIELDS => $body,
+    CURLOPT_HTTPHEADER => [
+        'authorization: ' . $key,
+        'content-type: application/gzip',
+    ],
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_CONNECTTIMEOUT => 10,
+    CURLOPT_TIMEOUT => 120,
+    CURLOPT_NOSIGNAL => true,
+]);
+$response = curl_exec($handle);
+$status = (int) curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
+$error = curl_error($handle);
+if ($response === false) {
+    fwrite(STDERR, $error !== '' ? $error : "curl failed\n");
+    exit(1);
+}
+if ($status < 200 || $status >= 300) {
+    fwrite(STDERR, 'HTTP ' . $status . "\n");
+    exit(1);
+}
+exit(0);
