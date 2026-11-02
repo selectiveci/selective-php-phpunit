@@ -44,7 +44,7 @@ done
 
 `php tests/harness/play.php` runs the unit suite plus the checks the transport scenarios do not cover: `--list-tests-xml` ids, class hooks re-entered per assigned id, and `stopOn*` forced off. It accepts `all`, `unit`, `list`, `hooks`, or `stops`.
 
-The transport pin is `selectiveci/transport` release tag `v0.2.0`. CI builds `transport` and `transport-conformance` with `cargo install --locked --git https://github.com/selectiveci/transport --tag v0.2.0 --bin transport --bin transport-conformance`, in a target directory used only for that tag; do not commit either binary. The fixture's `conformance.json` declares `before_all_seconds`, so `group_hook_time` runs against `PassTest`'s before-all hook.
+The transport pin is `selectiveci/transport` release tag `v0.2.0`. CI builds `transport` and `transport-conformance` from the v0.2.0 commit with `cargo install --locked --git https://github.com/selectiveci/transport --rev 553bb45b8bfa3ac9c9f7ed1ad71a8ac19d384542 --bin transport --bin transport-conformance`, in a target directory used only for that commit; do not commit either binary. The fixture's `conformance.json` declares `before_all_seconds`, so `group_hook_time` runs against `PassTest`'s before-all hook.
 
 ## Laravel
 
