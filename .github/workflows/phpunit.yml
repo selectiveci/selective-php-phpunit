@@ -37,11 +37,11 @@ jobs:
           - php: "8.3"
             phpunit: "12.5.40"
           - php: "8.4"
-            phpunit: "13.4.3"
+            phpunit: "13.4.5"
           - php: "8.5"
             phpunit: "12.5.40"
           - php: "8.5"
-            phpunit: "13.4.3"
+            phpunit: "13.4.5"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
