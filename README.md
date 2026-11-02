@@ -14,7 +14,7 @@ vendor/bin/selective exec phpunit --filter testPass
 
 `--debug` and `--log` belong to Selective and are not passed to PHPUnit (so PHPUnit's own `--debug` is not available through this command). `--debug` prints an error's backtrace instead of the support block, says when a reconnect waits, and treats an unknown server command as an error. `--log` writes every received command and sent response to `log/<runner id>.log`.
 
-The sidecar is `transport --stdio`. The binary is `SELECTIVE_TRANSPORT` when set, which is also how to use a glibc build. Otherwise the client uses `~/.selective/transport/<release>/transport`, downloading it on first use: the release asset for the platform (`transport-Linux-x86_64.tar.gz`, the static musl build, on Linux) is fetched from GitHub releases, or from `SELECTIVE_TRANSPORT_RELEASES` when set, and used only if its sha256 matches the one pinned in `TransportBinary`. The pin is a static musl build of transport PR #10 at 44a9c7a (`pr10-44a9c7a`) until a tagged release with `--stdio` exists; it then moves to that tag. The websocket URL is `SELECTIVE_TRANSPORT_URL` when set (used as given, plus any missing `test_map` and `remove_failed`, and `reconnect=true` on reconnect). Otherwise the client runs `transport --build-env` and builds the URL from that JSON. The URL and key stay in the child environment. They are not process arguments.
+The sidecar is `transport --stdio`. The binary is `SELECTIVE_TRANSPORT` when set, which is also how to use a glibc build. Otherwise the client uses `~/.selective/transport/<release>/transport`, downloading it on first use: the release asset for the platform (`transport-Linux-x86_64.tar.gz`, the static musl build, on Linux) is fetched from GitHub releases, or from `SELECTIVE_TRANSPORT_RELEASES` when set, and used only if its sha256 matches the one pinned in `TransportBinary`. The pin is transport release `v0.2.0`, the first tag with `--stdio`. There is no Windows asset. The websocket URL is `SELECTIVE_TRANSPORT_URL` when set (used as given, plus any missing `test_map` and `remove_failed`, and `reconnect=true` on reconnect). Otherwise the client runs `transport --build-env` and builds the URL from that JSON. The URL and key stay in the child environment. They are not process arguments.
 
 ## What the session does
 
@@ -44,7 +44,7 @@ done
 
 `php tests/harness/play.php` runs the unit suite plus the checks the transport scenarios do not cover: `--list-tests-xml` ids, class hooks re-entered per assigned id, and `stopOn*` forced off. It accepts `all`, `unit`, `list`, `hooks`, or `stops`.
 
-The transport pin is `selectiveci/transport` commit `44a9c7abde5a35d869c5f71780d56e26c0c6f8bd` (`cursor/transport-foundation-f902`). CI builds `transport` and `transport-conformance` with `cargo install --locked --git https://github.com/selectiveci/transport --rev <sha> --bin transport --bin transport-conformance`, in a target directory used only for that sha; do not commit either binary. The fixture's `conformance.json` declares `before_all_seconds`, so `group_hook_time` runs against `PassTest`'s before-all hook.
+The transport pin is `selectiveci/transport` release tag `v0.2.0`. CI builds `transport` and `transport-conformance` with `cargo install --locked --git https://github.com/selectiveci/transport --tag v0.2.0 --bin transport --bin transport-conformance`, in a target directory used only for that tag; do not commit either binary. The fixture's `conformance.json` declares `before_all_seconds`, so `group_hook_time` runs against `PassTest`'s before-all hook.
 
 ## Laravel
 

@@ -8,12 +8,12 @@ jobs:
   transport:
     runs-on: ubuntu-latest
     env:
-      TRANSPORT_SHA: 44a9c7abde5a35d869c5f71780d56e26c0c6f8bd
+      TRANSPORT_TAG: v0.2.0
     steps:
       - uses: dtolnay/rust-toolchain@stable
       - run: |
-          CARGO_TARGET_DIR="$RUNNER_TEMP/target-$TRANSPORT_SHA" cargo install --locked --git https://github.com/selectiveci/transport \
-            --rev "$TRANSPORT_SHA" --bin transport --bin transport-conformance --root "$RUNNER_TEMP/transport"
+          CARGO_TARGET_DIR="$RUNNER_TEMP/target-$TRANSPORT_TAG" cargo install --locked --git https://github.com/selectiveci/transport \
+            --tag "$TRANSPORT_TAG" --bin transport --bin transport-conformance --root "$RUNNER_TEMP/transport"
       - uses: actions/upload-artifact@v4
         with:
           name: transport
