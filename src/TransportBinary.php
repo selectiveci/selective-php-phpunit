@@ -6,10 +6,13 @@ namespace Selective\PHPUnit;
 
 final class TransportBinary
 {
-    public const RELEASE = 'pr10-44a9c7a';
+    public const RELEASE = 'v0.2.0';
 
     public const SHA256 = [
-        'transport-Linux-x86_64.tar.gz' => '54d6b64506482fd5bfe91a6c846a4cd6fc016001d4aa3161045816a10425cfbc',
+        'transport-Darwin-aarch64.tar.gz' => '7dcaec969378a181a62749673b9c0b658be17bf16a8880f5effbd8e03a6c4a17',
+        'transport-Darwin-x86_64.tar.gz' => 'ccb9f795086d5584ff605cff8aefc534a82cde3154a3231f7f9396cde27bf7d4',
+        'transport-Linux-aarch64.tar.gz' => 'cf54fbf596b8a708fbc64e031f98737f076b8c32c371a4506c8141c49bca84be',
+        'transport-Linux-x86_64.tar.gz' => '87b2d6847ed0efa44c73ec16526b85134bf6f2e3759d99f925682eaf1b27d937',
     ];
 
     private const RELEASES = 'https://github.com/selectiveci/transport/releases/download';
