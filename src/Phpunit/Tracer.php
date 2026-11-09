@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Selective\PHPUnit\Phpunit;
 
+use Selective\PHPUnit\Capability;
 use Selective\PHPUnit\Paths;
 
 final class Tracer
@@ -16,11 +17,7 @@ final class Tracer
 
     public function available(): bool
     {
-        if (extension_loaded('pcov')) {
-            return true;
-        }
-
-        return extension_loaded('xdebug') && getenv('SELECTIVE_TEST_MAP_XDEBUG') === '1';
+        return Capability::canRecord();
     }
 
     public function start(string $id): void
@@ -30,16 +27,12 @@ final class Tracer
             return;
         }
         try {
-            if (extension_loaded('pcov')) {
-                $current = ini_get('pcov.directory');
-                if ($current === false || $current === '') {
-                    ini_set('pcov.directory', getcwd() ?: '.');
-                }
+            $current = ini_get('pcov.directory');
+            if ($current === false || $current === '') {
+                ini_set('pcov.directory', getcwd() ?: '.');
             }
             $filter = new \SebastianBergmann\CodeCoverage\Filter();
-            $driver = extension_loaded('pcov')
-                ? new \SebastianBergmann\CodeCoverage\Driver\PcovDriver($filter)
-                : new \SebastianBergmann\CodeCoverage\Driver\XdebugDriver($filter);
+            $driver = new \SebastianBergmann\CodeCoverage\Driver\PcovDriver($filter);
             $this->coverage = new \SebastianBergmann\CodeCoverage\CodeCoverage($driver, $filter);
             $this->coverage->start($id);
             $this->ready = true;
