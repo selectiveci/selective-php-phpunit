@@ -27,16 +27,12 @@ final class Tracer
             return;
         }
         try {
-            if (extension_loaded('pcov')) {
-                $current = ini_get('pcov.directory');
-                if ($current === false || $current === '') {
-                    ini_set('pcov.directory', getcwd() ?: '.');
-                }
+            $current = ini_get('pcov.directory');
+            if ($current === false || $current === '') {
+                ini_set('pcov.directory', getcwd() ?: '.');
             }
             $filter = new \SebastianBergmann\CodeCoverage\Filter();
-            $driver = extension_loaded('pcov')
-                ? new \SebastianBergmann\CodeCoverage\Driver\PcovDriver($filter)
-                : new \SebastianBergmann\CodeCoverage\Driver\XdebugDriver($filter);
+            $driver = new \SebastianBergmann\CodeCoverage\Driver\PcovDriver($filter);
             $this->coverage = new \SebastianBergmann\CodeCoverage\CodeCoverage($driver, $filter);
             $this->coverage->start($id);
             $this->ready = true;

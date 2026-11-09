@@ -6,48 +6,46 @@ namespace Selective\PHPUnit\Tests;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use Selective\PHPUnit\Capability;
+use Selective\PHPUnit\Command;
 
 final class CapabilityTest extends TestCase
 {
-    private string|false $disable;
-
-    protected function setUp(): void
+    public function testWithoutPcovTheClientAdvertisesSelect(): void
     {
-        $this->disable = getenv('SELECTIVE_TEST_MAP_DISABLE');
+        $this->assertSame('select', $this->testMap([]));
     }
 
-    protected function tearDown(): void
+    public function testWithPcovTheClientAdvertisesRecord(): void
     {
-        putenv($this->disable === false ? 'SELECTIVE_TEST_MAP_DISABLE' : 'SELECTIVE_TEST_MAP_DISABLE=' . $this->disable);
+        $this->requireExtension('extension=pcov', 'pcov');
+
+        $this->assertSame('record', $this->testMap(['extension=pcov']));
     }
 
-    public static function tracers(): array
+    public function testTheOldXdebugOptInDoesNotAffectSelect(): void
     {
-        return [
-            'nothing loaded' => [false, [], false, false],
-            'pcov' => [true, [], false, true],
-            'pcov wins over the opt-in' => [true, ['develop'], true, true],
-            'xdebug coverage without the opt-in' => [false, ['coverage'], false, false],
-            'xdebug coverage with the opt-in' => [false, ['coverage'], true, true],
-            'xdebug coverage among other modes' => [false, ['develop', 'coverage'], true, true],
-            'xdebug without coverage mode' => [false, ['develop'], true, false],
-            'xdebug mode off' => [false, [], true, false],
-        ];
+        $this->assertSame('select', $this->testMap([], ['SELECTIVE_TEST_MAP_XDEBUG' => '1']));
     }
 
-    #[DataProvider('tracers')]
-    public function testATracerIsUsableOnlyWhenItCanActuallyRecord(bool $pcov, array $modes, bool $optIn, bool $expected): void
+    #[DataProvider('xdebugModes')]
+    public function testXdebugAloneNeverMakesTheClientAdvertiseRecord(string $mode): void
     {
-        $this->assertSame($expected, Capability::tracerUsable($pcov, $modes, $optIn));
+        $this->requireExtension('zend_extension=xdebug', 'xdebug');
+
+        $this->assertSame('select', $this->testMap(['zend_extension=xdebug', 'xdebug.mode=' . $mode], ['SELECTIVE_TEST_MAP_XDEBUG' => '1']));
+    }
+
+    public static function xdebugModes(): array
+    {
+        return ['coverage' => ['coverage'], 'develop' => ['develop'], 'off' => ['off']];
     }
 
     #[DataProvider('disableValues')]
-    public function testDisableWinsOverAnyTracer(string $value): void
+    public function testDisableWinsOverPcov(string $value): void
     {
-        putenv('SELECTIVE_TEST_MAP_DISABLE=' . $value);
+        $this->requireExtension('extension=pcov', 'pcov');
 
-        $this->assertSame('0', Capability::testMap());
+        $this->assertSame('0', $this->testMap(['extension=pcov'], ['SELECTIVE_TEST_MAP_DISABLE' => $value]));
     }
 
     public static function disableValues(): array
@@ -55,10 +53,35 @@ final class CapabilityTest extends TestCase
         return ['1' => ['1'], 'true' => ['true'], 'yes' => ['YES']];
     }
 
-    public function testTestMapFollowsTheLoadedTracerWhenNotDisabled(): void
+    private function testMap(array $ini, array $env = []): string
     {
-        putenv('SELECTIVE_TEST_MAP_DISABLE');
+        $assignments = 'putenv("SELECTIVE_TEST_MAP_DISABLE");putenv("SELECTIVE_TEST_MAP_XDEBUG");';
+        foreach ($env as $name => $value) {
+            $assignments .= 'putenv(' . var_export($name . '=' . $value, true) . ');';
+        }
+        $script = $assignments . 'require ' . var_export(dirname(__DIR__, 2) . '/src/Capability.php', true) . ';'
+            . 'echo \Selective\PHPUnit\Capability::testMap();';
+        [$code, $stdout] = Command::run($this->php($ini, $script));
+        $this->assertSame(0, $code);
 
-        $this->assertSame(Capability::canRecord() ? 'record' : 'select', Capability::testMap());
+        return trim($stdout);
+    }
+
+    private function requireExtension(string $directive, string $name): void
+    {
+        [, $stdout] = Command::run($this->php([$directive], 'echo extension_loaded(' . var_export($name, true) . ') ? "yes" : "no";'));
+        if (trim($stdout) !== 'yes') {
+            $this->markTestSkipped($name . ' cannot be loaded into a bare PHP here');
+        }
+    }
+
+    private function php(array $ini, string $script): array
+    {
+        $command = [PHP_BINARY, '-n'];
+        foreach ($ini as $directive) {
+            array_push($command, '-d', $directive);
+        }
+
+        return array_merge($command, ['-r', $script]);
     }
 }
