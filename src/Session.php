@@ -272,8 +272,7 @@ final class Session
     {
         if (($command['record'] ?? false) === true) {
             $this->record = true;
-            $xdebug = extension_loaded('xdebug') && getenv('SELECTIVE_TEST_MAP_XDEBUG') === '1';
-            if (!extension_loaded('pcov') && !$xdebug && !$this->recordWarned) {
+            if (!Capability::canRecord() && !$this->recordWarned) {
                 $this->recordWarned = true;
                 $this->console->message('Selective asked this runner to record a test map, but the pcov tracer is not available. Tests will run normally.');
             }

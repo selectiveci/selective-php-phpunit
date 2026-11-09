@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Selective\PHPUnit\Phpunit;
 
+use Selective\PHPUnit\Capability;
 use Selective\PHPUnit\Paths;
 
 final class Tracer
@@ -16,11 +17,7 @@ final class Tracer
 
     public function available(): bool
     {
-        if (extension_loaded('pcov')) {
-            return true;
-        }
-
-        return extension_loaded('xdebug') && getenv('SELECTIVE_TEST_MAP_XDEBUG') === '1';
+        return Capability::canRecord();
     }
 
     public function start(string $id): void
