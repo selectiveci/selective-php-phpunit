@@ -17,7 +17,7 @@ final class TransportBinaryTest extends TestCase
         $this->assertSame('transport-Linux-aarch64.tar.gz', TransportBinary::asset('Linux', 'arm64'));
         $this->assertSame('transport-Darwin-aarch64.tar.gz', TransportBinary::asset('Darwin', 'arm64'));
         $this->assertSame('transport-Darwin-x86_64.tar.gz', TransportBinary::asset('Darwin', 'x86_64'));
-        $this->expectExceptionMessage('No transport is pinned for Windows-x86_64 in release v0.2.0');
+        $this->expectExceptionMessage('No transport is pinned for Windows-x86_64 in release v0.3.0');
         TransportBinary::asset('Windows', 'AMD64');
     }
 
