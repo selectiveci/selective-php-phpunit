@@ -24,7 +24,8 @@
         }
     },
     "suggest": {
-        "ext-pcntl": "Stop a run when the process receives SIGINT or SIGTERM."
+        "ext-pcntl": "Stop a run when the process receives SIGINT or SIGTERM.",
+        "ext-pcov": "Record each test's covered files for the test map. Not installed with the client."
     },
     "config": {
         "sort-packages": true

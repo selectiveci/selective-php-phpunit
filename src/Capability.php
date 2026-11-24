@@ -13,6 +13,11 @@ final class Capability
             return '0';
         }
 
-        return extension_loaded('pcov') ? 'record' : 'select';
+        return self::canRecord() ? 'record' : 'select';
+    }
+
+    public static function canRecord(): bool
+    {
+        return extension_loaded('pcov');
     }
 }
